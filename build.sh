@@ -5,15 +5,11 @@ set -o errexit
 # Instalar dependencias
 pip install -r requirements.txt
 
-# Entrar a la carpeta donde está el manage.py
-cd sistema_pedidos
+# --- COMANDO INTELIGENTE ---
+# Busca manage.py y ejecuta las migraciones donde sea que esté
+find . -name "manage.py" -exec python {} migrate \;
+find . -name "manage.py" -exec python {} collectstatic --no-input \;
 
-# Ejecutar las migraciones para crear las tablas
-python manage.py migrate
-
-# Recolectar archivos estáticos (CSS, Imágenes)
-python manage.py collectstatic --no-input
-
-# Crear tu usuario (Cámbialos por los tuyos)
+# Crear superusuario (ajusta tus datos)
 export DJANGO_SUPERUSER_PASSWORD="1234"
-python manage.py createsuperuser --noinput --username admin --email admin@ejemplo.com || true
+find . -name "manage.py" -exec python {} createsuperuser --noinput --username admin --email admin@ejemplo.com \; || true
