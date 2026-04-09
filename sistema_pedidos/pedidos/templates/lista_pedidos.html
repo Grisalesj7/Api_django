@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shopping-cart"></i> Historial de Pedidos</h2>
+        <a href="{% url 'pedido_create' %}" class="btn btn-success shadow-sm">
+            <i class="fas fa-plus"></i> Crear Nuevo Pedido
+        </a>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th class="text-center">Descargar</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in object_list %}
+                    <tr>
+                        <td>#{{ pedido.id }}</td>
+                        <td class="fw-bold">{{ pedido.cliente.nombre }}</td>
+                        <td>{{ pedido.fecha|date:"d/m/Y" }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if pedido.estado == 'Entregado' %}bg-success
+                                {% elif pedido.estado == 'Enviado' %}bg-info
+                                {% else %}bg-warning text-dark
+                                {% endif %}">
+                                {{ pedido.estado }}
+                            </span>
+                        </td>
+                        
+                        <td class="text-center">
+                            <a href="{% url 'pedido_pdf' pedido.id %}" class="btn btn-sm btn-outline-danger" title="Factura PDF">
+                                <i class="fas fa-file-invoice"></i>
+                            </a>
+                            <a href="{% url 'pedido_excel' pedido.id %}" class="btn btn-sm btn-outline-success" title="Detalle Excel">
+                                <i class="fas fa-file-excel"></i>
+                            </a>
+                        </td>
+
+                        <td class="text-center">
+                            <a href="{% url 'pedido_update' pedido.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-sm btn-danger" onclick="confirmarEliminarPed('{{ pedido.id }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <form id="delete-form-ped-{{ pedido.id }}" action="{% url 'pedido_delete' pedido.id %}" method="POST" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No se han registrado pedidos aún.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 🔥 PAGINACIÓN -->
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination shadow-sm">
+
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">« Primera</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹ Anterior</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente ›</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última »</a>
+                    </li>
+                {% endif %}
+
+            </ul>
+        </nav>
+    </div>
+
+</div>
+
+<script>
+function confirmarEliminarPed(id) {
+    Swal.fire({
+        title: '¿Eliminar pedido?',
+        text: "Esta acción no se puede deshacer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Eliminar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-ped-' + id).submit();
+        }
+    })
+}
+</script>
+{% endblock %}

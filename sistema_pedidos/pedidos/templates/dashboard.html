@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Pro - Sistema de Pedidos</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { border: none; border-radius: 15px; transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .card h2 { font-weight: 800; }
+        .nav-custom { background: linear-gradient(90deg, #212529 0%, #343a40 100%); }
+        .chart-container { position: relative; height: 40vh; width: 80vw; margin: auto; }
+        .badge-critico { background-color: #ff4757; color: white; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark nav-custom shadow-sm">
+  <div class="container d-flex justify-content-between">
+    <span class="navbar-brand fw-bold">🚀 Sistema de Pedidos</span>
+    <div class="d-flex align-items-center gap-3">
+        <span class="text-white-50">👤 {{ request.user.username }}</span>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-light btn-sm rounded-pill px-3">Cerrar sesión</button>
+        </form>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📊 Panel de Control <small class="text-muted fs-5">| {{ mes_nombre }}</small></h2>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm p-3 border-bottom border-primary border-4">
+                <p class="text-muted mb-1">Clientes</p>
+                <h2 class="text-primary">{{ clientes_total }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm p-3 border-bottom border-success border-4">
+                <p class="text-muted mb-1">Productos</p>
+                <h2 class="text-success">{{ productos_total }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm p-3 border-bottom border-warning border-4">
+                <p class="text-muted mb-1">Pedidos Totales</p>
+                <h2 class="text-warning">{{ pedidos_total }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm p-3 border-bottom border-info border-4">
+                <p class="text-muted mb-1">Ventas {{ mes_nombre }}</p>
+                <h2 class="text-info">${{ ventas_mes_monto }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-lg-8">
+            <div class="card shadow-sm p-4 h-100">
+                <h5 class="fw-bold mb-4">🔥 Productos Más Vendidos del Mes</h5>
+                <div class="chart-container">
+                    <canvas id="topProductosChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm p-3 mb-4 {% if stock_critico > 0 %}bg-danger text-white{% endif %}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">⚠️ Stock Crítico</h6>
+                    <span class="badge rounded-pill bg-white text-danger">{{ stock_critico }}</span>
+                </div>
+                <small class="mt-2">Productos con menos de 5 unidades.</small>
+            </div>
+
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-bold">🧾 Últimos pedidos</div>
+                <ul class="list-group list-group-flush">
+                    {% for p in ultimos %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>#{{ p.id }}</strong> <br>
+                            <small class="text-muted">{{ p.cliente.nombre }}</small>
+                        </div>
+                        <span class="badge bg-light text-dark rounded-pill">${{ p.total_pagado }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item">No hay actividad reciente</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br><br>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Recuperar los datos del contexto de Django
+    const labels = JSON.parse('{{ grafica_labels|safe }}');
+    const datos = JSON.parse('{{ grafica_datos|safe }}');
+
+    const ctx = document.getElementById('topProductosChart').getContext('2d');
+
+    // 2. Crear gradiente para las barras
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(54, 162, 235, 0.8)');
+    gradient.addColorStop(1, 'rgba(54, 162, 235, 0.2)');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Unidades Vendidas',
+                data: datos,
+                backgroundColor: gradient,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                borderRadius: 10, // Barras redondeadas
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    grid: { display: false },
+                    ticks: { stepSize: 1 }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+});
+</script>
+
+</body>
+</html>

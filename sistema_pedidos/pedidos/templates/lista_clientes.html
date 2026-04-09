@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users"></i> Gestión de Clientes</h2>
+        <a href="{% url 'cliente_create' %}" class="btn btn-success shadow-sm">
+            <i class="fas fa-user-plus"></i> Nuevo Cliente
+        </a>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre del Cliente</th>
+                        <th class="text-center">Reportes</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in object_list %}
+                    <tr>
+                        <td class="fw-bold">{{ cliente.nombre }}</td>
+                        
+                        <td class="text-center">
+                            <a href="{% url 'cliente_pdf' cliente.id %}" class="btn btn-sm btn-outline-danger" title="Descargar PDF">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </a>
+                            <a href="{% url 'cliente_excel' cliente.id %}" class="btn btn-sm btn-outline-success" title="Descargar Excel">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </a>
+                        </td>
+
+                        <td class="text-center">
+                            <a href="{% url 'cliente_update' cliente.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            
+                            <button type="button" 
+                                    class="btn btn-sm btn-danger" 
+                                    data-id="{{ cliente.id }}" 
+                                    data-nombre="{{ cliente.nombre }}" 
+                                    onclick="confirmarEliminar(this)">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            
+                            <form id="delete-form-{{ cliente.id }}" action="{% url 'cliente_delete' cliente.id %}" method="POST" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">
+                            No se encontraron clientes registrados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">Primera</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+            {% endif %}
+            
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<script>
+function confirmarEliminar(boton) {
+    const id = boton.getAttribute('data-id');
+    const nombre = boton.getAttribute('data-nombre'); 
+
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Deseas eliminar al cliente: " + nombre,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-' + id).submit();
+        }
+    })
+}
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">📦 Sistema de Gestión de Pedidos</h1>
+        <p class="lead text-muted">Bienvenido al panel de administración. Selecciona una sección para comenzar.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+
+        <!-- Clientes -->
+        <div class="col-md-3">
+            <div class="card h-100 shadow border-0 text-center p-3">
+                <div class="card-body">
+                    <i class="fas fa-users fa-3x text-success mb-3"></i>
+                    <h3 class="card-title">Clientes</h3>
+                    <p class="card-text text-muted">Registra y gestiona la base de datos de tus clientes.</p>
+                    <a href="{% url 'cliente_list' %}" class="btn btn-success w-100">Ir a Clientes</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos -->
+        <div class="col-md-3">
+            <div class="card h-100 shadow border-0 text-center p-3">
+                <div class="card-body">
+                    <i class="fas fa-boxes fa-3x text-warning mb-3"></i>
+                    <h3 class="card-title">Productos</h3>
+                    <p class="card-text text-muted">Administra el inventario y precios de tus artículos.</p>
+                    <a href="{% url 'producto_list' %}" class="btn btn-warning w-100">Ir a Productos</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pedidos -->
+        <div class="col-md-3">
+            <div class="card h-100 shadow border-0 text-center p-3">
+                <div class="card-body">
+                    <i class="fas fa-shopping-cart fa-3x text-info mb-3"></i>
+                    <h3 class="card-title">Pedidos</h3>
+                    <p class="card-text text-muted">Crea nuevos pedidos y consulta el historial de ventas.</p>
+                    <a href="{% url 'pedido_list' %}" class="btn btn-info text-white w-100">Ir a Pedidos</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard (NUEVO) -->
+        <div class="col-md-3">
+            <div class="card h-100 shadow border-0 text-center p-3">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-3x text-dark mb-3"></i>
+                    <h3 class="card-title">Dashboard</h3>
+                    <p class="card-text text-muted">Visualiza estadísticas generales del sistema.</p>
+                    <a href="{% url 'dashboard' %}" class="btn btn-dark w-100">Ir al Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-box"></i> Gestión de Productos</h2>
+        <a href="{% url 'producto_create' %}" class="btn btn-success shadow-sm">
+            <i class="fas fa-plus-circle"></i> Nuevo Producto
+        </a>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th class="text-center">Reportes</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in object_list %}
+                    <tr>
+                        <td class="fw-bold">{{ producto.nombre }}</td>
+                        <td>${{ producto.precio }}</td>
+                        <td>
+                            {% if producto.stock <= 5 %}
+                                <span class="badge bg-danger">{{ producto.stock }} (Bajo)</span>
+                            {% else %}
+                                <span class="badge bg-primary">{{ producto.stock }}</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="text-center">
+                            <a href="{% url 'producto_pdf' producto.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </a>
+                            <a href="{% url 'producto_excel' producto.id %}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </a>
+                        </td>
+
+                        <td class="text-center">
+                            <a href="{% url 'producto_update' producto.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-sm btn-danger" onclick="confirmarEliminarProd('{{ producto.id }}', '{{ producto.nombre }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <form id="delete-form-prod-{{ producto.id }}" action="{% url 'producto_delete' producto.id %}" method="POST" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            No hay productos en inventario.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 🔥 PAGINACIÓN -->
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination shadow-sm">
+
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">« Primera</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹ Anterior</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente ›</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última »</a>
+                    </li>
+                {% endif %}
+
+            </ul>
+        </nav>
+    </div>
+
+</div>
+
+<script>
+function confirmarEliminarProd(id, nombre) {
+    Swal.fire({
+        title: '¿Eliminar producto?',
+        text: "Deseas eliminar: " + nombre,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Sí, eliminar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-prod-' + id).submit();
+        }
+    })
+}
+</script>
+{% endblock %}

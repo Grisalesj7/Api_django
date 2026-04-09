@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0">Gestión de Registro</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            {% for field in form %}
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">{{ field.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if detalles %}
+                            <hr class="my-4">
+                            <h5 class="text-secondary mb-3"><i class="fas fa-shopping-basket"></i> Productos del Pedido</h5>
+                            
+                            {{ detalles.management_form }}
+                            
+                            <div id="detalles-container">
+                                {% for form_detalle in detalles %}
+                                    <div class="row align-items-end border rounded p-2 mb-2 bg-light">
+                                        {% for field in form_detalle.visible_fields %}
+                                            <div class="col">
+                                                <label class="form-label small fw-bold text-muted">{{ field.label }}</label>
+                                                {{ field }}
+                                                {% if field.errors %}
+                                                    <div class="text-danger x-small">{{ field.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                        
+                                        {% for hidden in form_detalle.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success py-2 fw-bold">Guardar Información</button>
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Añade clases de Bootstrap a todos los campos, incluyendo los nuevos de productos
+    function aplicarEstilos() {
+        document.querySelectorAll('input, select, textarea').forEach(function(el) {
+            el.classList.add('form-control');
+            // Si es un checkbox (como el de "Eliminar"), no le ponemos form-control
+            if (el.type === 'checkbox') {
+                el.classList.remove('form-control');
+                el.classList.add('form-check-input');
+            }
+        });
+    }
+
+    aplicarEstilos();
+</script>
+
+<style>
+    .x-small { font-size: 0.75rem; }
+</style>
+{% endblock %}
