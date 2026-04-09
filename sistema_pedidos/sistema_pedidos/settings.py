@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,7 @@ SECRET_KEY = 'django-insecure-09a8ue4kwj)+16*j_l&l-6ue5c%2k311!(oxhsn7=z9z9zqiq4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -78,18 +79,19 @@ WSGI_APPLICATION = 'sistema_pedidos.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gestion_pedidos_db',      # El nombre que creaste en MySQL Workbench
-        'USER': 'root',                    # Tu usuario de MySQL
-        'PASSWORD': 'admin1234',       # La contraseña que usas en Workbench
-        'HOST': '127.0.0.1',               # O 'localhost'
-        'PORT': '3306',                    # El puerto por defecto
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
-    }
+    'default': dj_database_url.config(
+        # Esta es tu conexión de MySQL local en formato URL
+        # Estructura: mysql://usuario:contraseña@host:puerto/nombre_db
+        default='mysql://root:admin1234@127.0.0.1:3306/gestion_pedidos_db',
+        conn_max_age=600
+    )
 }
+
+# Mantiene la compatibilidad con el modo estricto de MySQL para tu entorno local
+if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+    DATABASES['default']['OPTIONS'] = {
+        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
